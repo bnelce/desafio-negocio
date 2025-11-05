@@ -14,7 +14,14 @@ export async function adminIntentRoutes(app: FastifyInstance) {
         tags: ['Admin - Intents'],
         summary: 'List intents',
         description: 'List all participation intents with optional filtering',
-        querystring: listIntentsQuerySchema.shape.querystring,
+        querystring: {
+          type: 'object',
+          properties: {
+            status: { type: 'string', enum: ['PENDING', 'APPROVED', 'REJECTED'] },
+            page: { type: 'number' },
+            pageSize: { type: 'number' },
+          },
+        },
         headers: {
           type: 'object',
           properties: {
@@ -63,7 +70,13 @@ export async function adminIntentRoutes(app: FastifyInstance) {
         tags: ['Admin - Intents'],
         summary: 'Approve intent',
         description: 'Approve a participation intent and generate invite token',
-        params: intentIdParamSchema.shape.params,
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+          },
+          required: ['id'],
+        },
         headers: {
           type: 'object',
           properties: {
@@ -100,7 +113,13 @@ export async function adminIntentRoutes(app: FastifyInstance) {
         tags: ['Admin - Intents'],
         summary: 'Reject intent',
         description: 'Reject a participation intent',
-        params: intentIdParamSchema.shape.params,
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+          },
+          required: ['id'],
+        },
         headers: {
           type: 'object',
           properties: {

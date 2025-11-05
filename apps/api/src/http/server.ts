@@ -2,11 +2,6 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import swagger from '@fastify/swagger'
 import swaggerUi from '@fastify/swagger-ui'
-import {
-  serializerCompiler,
-  validatorCompiler,
-  ZodTypeProvider,
-} from 'fastify-type-provider-zod'
 import { env } from '@/config/env'
 import { logger } from '@/config/logger'
 import prismaPlugin from '@/plugins/prisma'
@@ -21,10 +16,6 @@ const app = Fastify({
   requestIdHeader: 'x-request-id',
   requestIdLogLabel: 'reqId',
 })
-
-// Set up Zod type provider
-app.setValidatorCompiler(validatorCompiler)
-app.setSerializerCompiler(serializerCompiler)
 
 // Register plugins
 async function bootstrap() {

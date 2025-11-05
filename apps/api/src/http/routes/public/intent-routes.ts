@@ -1,6 +1,5 @@
 import { FastifyInstance } from 'fastify'
 import { IntentController } from '@/http/controllers/intent-controller'
-import { createIntentSchema } from '@/http/schemas/intent-schemas'
 
 export async function intentRoutes(app: FastifyInstance) {
   app.post(
@@ -10,7 +9,16 @@ export async function intentRoutes(app: FastifyInstance) {
         tags: ['Intents'],
         summary: 'Create participation intent',
         description: 'Submit a participation intent for review',
-        body: createIntentSchema.shape.body,
+        body: {
+          type: 'object',
+          properties: {
+            fullName: { type: 'string', minLength: 3 },
+            email: { type: 'string', format: 'email' },
+            phone: { type: 'string' },
+            notes: { type: 'string' },
+          },
+          required: ['fullName', 'email'],
+        },
         response: {
           201: {
             description: 'Intent created successfully',

@@ -5,7 +5,16 @@
       "Bash(pnpm prisma:generate:*)",
       "Bash(pnpm prisma db push:*)",
       "Bash(timeout /t 2)",
-      "Bash(nul)"
+      "Bash(nul)",
+      "Bash(docker compose:*)",
+      "Bash(pnpm prisma migrate:*)",
+      "Bash(pnpm prisma:seed:*)",
+      "Bash(copy:*)",
+      "Bash(cat:*)",
+      "Bash(pnpm dev)",
+      "Bash(curl:*)",
+      "Bash(dir:*)",
+      "Bash(pnpm test:*)"
     ],
     "deny": [],
     "ask": []

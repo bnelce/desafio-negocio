@@ -5,7 +5,7 @@
   "description": "Backend API for Networking Groups Platform",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "tsx watch src/http/server.ts",
+    "dev": "tsx watch --env-file .env src/http/server.ts",
     "build": "tsup src/http/server.ts --format esm --clean",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",

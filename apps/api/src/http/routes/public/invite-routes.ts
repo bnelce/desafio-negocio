@@ -1,6 +1,5 @@
 import { FastifyInstance } from 'fastify'
 import { InviteController } from '@/http/controllers/invite-controller'
-import { inviteTokenParamSchema, registerWithInviteSchema } from '@/http/schemas/invite-schemas'
 
 export async function inviteRoutes(app: FastifyInstance) {
   app.get(
@@ -10,7 +9,13 @@ export async function inviteRoutes(app: FastifyInstance) {
         tags: ['Invites'],
         summary: 'Validate invite token',
         description: 'Check if an invite token is valid',
-        params: inviteTokenParamSchema.shape.params,
+        params: {
+          type: 'object',
+          properties: {
+            token: { type: 'string' },
+          },
+          required: ['token'],
+        },
         response: {
           200: {
             description: 'Invite is valid',
@@ -42,8 +47,23 @@ export async function inviteRoutes(app: FastifyInstance) {
         tags: ['Invites'],
         summary: 'Register with invite',
         description: 'Complete member registration using a valid invite token',
-        params: registerWithInviteSchema.shape.params,
-        body: registerWithInviteSchema.shape.body,
+        params: {
+          type: 'object',
+          properties: {
+            token: { type: 'string' },
+          },
+          required: ['token'],
+        },
+        body: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 3 },
+            email: { type: 'string', format: 'email' },
+            phone: { type: 'string' },
+            password: { type: 'string', minLength: 8 },
+          },
+          required: ['name', 'email', 'password'],
+        },
         response: {
           201: {
             description: 'Member registered successfully',

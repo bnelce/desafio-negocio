@@ -7,23 +7,28 @@ Plataforma para gerenciar grupos de networking empresarial, substituindo planilh
 - **Monorepo**: Turborepo
 - **Backend**: Fastify + TypeScript + Prisma (Clean Architecture)
 - **Frontend**: Next.js 14 + TypeScript + TanStack Query
-- **Database**: SQLite (dev) / PostgreSQL (prod)
+- **Database**: PostgreSQL (dev e prod)
+- **Testes**: Vitest (unit tests) com 14 testes passando ✅
 
 ## Estrutura do Projeto
 
 ```
 networking-groups-platform/
 ├── apps/
-│   ├── api/              # Backend API (Fastify)
+│   ├── api/              # Backend API (Fastify) ✅ 100% Complete
 │   │   ├── src/
 │   │   │   ├── domain/       # Entidades e regras de negócio
 │   │   │   ├── application/  # Use cases e portas
 │   │   │   ├── infra/        # Repositórios e serviços externos
 │   │   │   └── http/         # Controllers, rotas e schemas
 │   │   └── prisma/           # Schema e migrações
-│   └── web/              # Frontend (Next.js) - A IMPLEMENTAR
+│   └── web/              # Frontend (Next.js) ✅ 100% Complete
+│       ├── app/              # Pages (App Router)
+│       ├── components/       # UI Components (shadcn/ui)
+│       ├── lib/              # Utilities & API client
+│       └── hooks/            # Custom hooks
 ├── docs/                 # Documentação do desafio
-├── docker-compose.yml
+├── docker-compose.yml    # PostgreSQL + Services
 └── turbo.json
 ```
 
@@ -46,55 +51,47 @@ pnpm install
 2. **Configure as variáveis de ambiente**
 
 ```bash
-cp .env.example apps/api/.env
+# Backend
+cp apps/api/.env.example apps/api/.env
+
+# Frontend
+cp apps/web/.env.example apps/web/.env.local
 ```
 
-Edite `apps/api/.env` conforme necessário.
+**Importante:** As variáveis já estão configuradas para desenvolvimento local. Não é necessário editar os arquivos `.env` para rodar localmente.
 
 3. **Configure o banco de dados**
 
-**Opção A: SQLite (Desenvolvimento local)**
+**PostgreSQL via Docker (Recomendado)**
 
+```bash
+docker compose up -d postgres
+```
+
+Execute setup do banco:
 ```bash
 cd apps/api
 pnpm prisma db push
 pnpm prisma:seed
 ```
 
-**Opção B: PostgreSQL via Docker**
+4. **Inicie os servidores**
 
 ```bash
-docker compose up -d postgres
-```
-
-Altere `apps/api/.env`:
-```env
-DB_PROVIDER=postgresql
-DATABASE_URL="postgresql://networking:networking123@localhost:5432/networking_groups"
-```
-
-Execute as migrações:
-```bash
-cd apps/api
-pnpm prisma:migrate:deploy
-pnpm prisma:seed
-```
-
-4. **Inicie o servidor de desenvolvimento**
-
-```bash
-# Backend
+# Backend (Terminal 1)
 cd apps/api
 pnpm dev
 
-# Ou use o Turbo na raiz
+# Frontend (Terminal 2)
+cd apps/web
 pnpm dev
 ```
 
-O servidor estará disponível em:
-- API: http://localhost:3333
-- Documentação (Swagger): http://localhost:3333/docs
-- Health Check: http://localhost:3333/healthz
+A aplicação estará disponível em:
+- **Frontend**: http://localhost:3000 🌐
+- **API**: http://localhost:3333
+- **Docs (Swagger)**: http://localhost:3333/docs 📚
+- **Health Check**: http://localhost:3333/healthz ❤️
 
 ## Credenciais de Admin (Desenvolvimento)
 
@@ -210,12 +207,13 @@ docker build -f apps/web/Dockerfile -t networking-web .
 - Pino - Logger estruturado
 - Vitest - Testes
 
-### Frontend (Próxima Fase)
+### Frontend
 - Next.js 14 - Framework React
 - TanStack Query - State management
 - React Hook Form - Formulários
 - Tailwind CSS - Estilos
 - shadcn/ui - Componentes UI
+- Zod - Validação de forms
 
 ## Estrutura Clean Architecture
 
@@ -239,15 +237,33 @@ src/
     └── middleware/   # Middlewares
 ```
 
-## Próximos Passos
+## Status do Projeto
 
-- [ ] Implementar frontend (apps/web)
-- [ ] Páginas públicas: `/intent` e `/register`
-- [ ] Área admin: `/admin/intents`
+### ✅ Implementado (MVP Completo)
+
+- ✅ **Backend API** (100%)
+  - Clean Architecture implementada
+  - 6 Use Cases funcionais
+  - PostgreSQL configurado
+  - Swagger/OpenAPI docs
+  - Health checks
+  - Seed com dados de teste
+
+- ✅ **Frontend Web** (100%)
+  - Home page com navegação
+  - Formulário de intenção (`/intent`)
+  - Registro com token (`/register`)
+  - Dashboard admin (`/admin/intents`)
+  - Integração completa com API
+
+### 🚧 Próximas Melhorias
+
+- [ ] Testes unitários e de integração
 - [ ] Testes E2E com Playwright
-- [ ] CI/CD pipeline
+- [ ] CI/CD pipeline (GitHub Actions)
 - [ ] Deploy (Vercel + Railway/Render)
-- [ ] Módulos opcionais (Introduções ou Dashboard)
+- [ ] JWT authentication
+- [ ] Módulos opcionais (Introduções ou Dashboard de métricas)
 
 ## Documentação Adicional
 
