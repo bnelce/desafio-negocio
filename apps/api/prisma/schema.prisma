@@ -10,49 +10,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum IntentStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-enum InviteStatus {
-  PENDING
-  USED
-  EXPIRED
-}
-
-enum MemberRole {
-  ADMIN
-  MEMBER
-}
-
-enum MemberStatus {
-  ACTIVE
-  INACTIVE
-}
-
-enum IntroductionStatus {
-  NEW
-  IN_PROGRESS
-  WON
-  LOST
-}
-
-enum InvoiceStatus {
-  PENDING
-  PAID
-  LATE
-}
-
 model Intent {
-  id         String       @id @default(uuid())
+  id         String    @id @default(uuid())
   fullName   String
   email      String
   phone      String?
   notes      String?
-  status     IntentStatus @default(PENDING)
-  createdAt  DateTime     @default(now())
+  status     String    @default("PENDING") // PENDING | APPROVED | REJECTED
+  createdAt  DateTime  @default(now())
   reviewedAt DateTime?
   reviewedBy String?
 
@@ -65,14 +30,14 @@ model Intent {
 }
 
 model Invite {
-  id        String       @id @default(uuid())
-  intentId  String       @unique
-  token     String       @unique
+  id        String   @id @default(uuid())
+  intentId  String   @unique
+  token     String   @unique
   expiresAt DateTime
-  status    InviteStatus @default(PENDING)
-  createdAt DateTime     @default(now())
+  status    String   @default("PENDING") // PENDING | USED | EXPIRED
+  createdAt DateTime @default(now())
 
-  intent    Intent       @relation(fields: [intentId], references: [id], onDelete: Cascade)
+  intent    Intent   @relation(fields: [intentId], references: [id], onDelete: Cascade)
 
   @@index([token])
   @@index([status])
@@ -81,15 +46,15 @@ model Invite {
 }
 
 model Member {
-  id        String       @id @default(uuid())
+  id        String   @id @default(uuid())
   name      String
-  email     String       @unique
+  email     String   @unique
   phone     String?
-  role      MemberRole   @default(MEMBER)
-  status    MemberStatus @default(ACTIVE)
+  role      String   @default("MEMBER") // ADMIN | MEMBER
+  status    String   @default("ACTIVE") // ACTIVE | INACTIVE
   password  String?
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   attendances        Attendance[]
   introductionsSent  Introduction[] @relation("IntroductionsSent")
@@ -134,14 +99,14 @@ model Attendance {
 }
 
 model Introduction {
-  id           String             @id @default(uuid())
+  id           String   @id @default(uuid())
   fromMemberId String
   toMemberId   String
   description  String
-  amount       Float              @default(0)
-  status       IntroductionStatus @default(NEW)
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  amount       Float    @default(0)
+  status       String   @default("NEW") // NEW | IN_PROGRESS | WON | LOST
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   fromMember Member @relation("IntroductionsSent", fields: [fromMemberId], references: [id], onDelete: Cascade)
   toMember   Member @relation("IntroductionsReceived", fields: [toMemberId], references: [id], onDelete: Cascade)
@@ -184,14 +149,14 @@ model OneOnOne {
 }
 
 model Invoice {
-  id        String        @id @default(uuid())
+  id        String   @id @default(uuid())
   memberId  String
   amount    Float
-  period    String        // Format: YYYY-MM
-  status    InvoiceStatus @default(PENDING)
+  period    String   // Format: YYYY-MM
+  status    String   @default("PENDING") // PENDING | PAID | LATE
   dueAt     DateTime
   paidAt    DateTime?
-  createdAt DateTime      @default(now())
+  createdAt DateTime @default(now())
 
   member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
