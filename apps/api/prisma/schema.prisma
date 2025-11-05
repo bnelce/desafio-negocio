@@ -1,0 +1,203 @@
+// This is your Prisma schema file
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum IntentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum InviteStatus {
+  PENDING
+  USED
+  EXPIRED
+}
+
+enum MemberRole {
+  ADMIN
+  MEMBER
+}
+
+enum MemberStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum IntroductionStatus {
+  NEW
+  IN_PROGRESS
+  WON
+  LOST
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  LATE
+}
+
+model Intent {
+  id         String       @id @default(uuid())
+  fullName   String
+  email      String
+  phone      String?
+  notes      String?
+  status     IntentStatus @default(PENDING)
+  createdAt  DateTime     @default(now())
+  reviewedAt DateTime?
+  reviewedBy String?
+
+  invite     Invite?
+
+  @@index([status])
+  @@index([email])
+  @@index([createdAt(sort: Desc)])
+  @@map("intents")
+}
+
+model Invite {
+  id        String       @id @default(uuid())
+  intentId  String       @unique
+  token     String       @unique
+  expiresAt DateTime
+  status    InviteStatus @default(PENDING)
+  createdAt DateTime     @default(now())
+
+  intent    Intent       @relation(fields: [intentId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([status])
+  @@index([expiresAt])
+  @@map("invites")
+}
+
+model Member {
+  id        String       @id @default(uuid())
+  name      String
+  email     String       @unique
+  phone     String?
+  role      MemberRole   @default(MEMBER)
+  status    MemberStatus @default(ACTIVE)
+  password  String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  attendances        Attendance[]
+  introductionsSent  Introduction[] @relation("IntroductionsSent")
+  introductionsReceived Introduction[] @relation("IntroductionsReceived")
+  oneOnOneMemberA    OneOnOne[] @relation("OneOnOneMemberA")
+  oneOnOneMemberB    OneOnOne[] @relation("OneOnOneMemberB")
+  invoices           Invoice[]
+
+  @@index([email])
+  @@index([status])
+  @@index([role])
+  @@map("members")
+}
+
+model Meeting {
+  id        String   @id @default(uuid())
+  title     String
+  date      DateTime
+  type      String   // "weekly" | "special"
+  createdAt DateTime @default(now())
+
+  attendances Attendance[]
+
+  @@index([date(sort: Desc)])
+  @@map("meetings")
+}
+
+model Attendance {
+  id        String   @id @default(uuid())
+  memberId  String
+  meetingId String
+  present   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  member  Member  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@unique([memberId, meetingId])
+  @@index([memberId])
+  @@index([meetingId])
+  @@map("attendances")
+}
+
+model Introduction {
+  id           String             @id @default(uuid())
+  fromMemberId String
+  toMemberId   String
+  description  String
+  amount       Float              @default(0)
+  status       IntroductionStatus @default(NEW)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  fromMember Member @relation("IntroductionsSent", fields: [fromMemberId], references: [id], onDelete: Cascade)
+  toMember   Member @relation("IntroductionsReceived", fields: [toMemberId], references: [id], onDelete: Cascade)
+  thankYous  ThankYou[]
+
+  @@index([fromMemberId])
+  @@index([toMemberId])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@map("introductions")
+}
+
+model ThankYou {
+  id             String   @id @default(uuid())
+  introductionId String
+  note           String
+  createdAt      DateTime @default(now())
+
+  introduction Introduction @relation(fields: [introductionId], references: [id], onDelete: Cascade)
+
+  @@index([introductionId])
+  @@map("thank_yous")
+}
+
+model OneOnOne {
+  id        String   @id @default(uuid())
+  memberAId String
+  memberBId String
+  date      DateTime
+  notes     String?
+  createdAt DateTime @default(now())
+
+  memberA Member @relation("OneOnOneMemberA", fields: [memberAId], references: [id], onDelete: Cascade)
+  memberB Member @relation("OneOnOneMemberB", fields: [memberBId], references: [id], onDelete: Cascade)
+
+  @@index([memberAId])
+  @@index([memberBId])
+  @@index([date(sort: Desc)])
+  @@map("one_on_ones")
+}
+
+model Invoice {
+  id        String        @id @default(uuid())
+  memberId  String
+  amount    Float
+  period    String        // Format: YYYY-MM
+  status    InvoiceStatus @default(PENDING)
+  dueAt     DateTime
+  paidAt    DateTime?
+  createdAt DateTime      @default(now())
+
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([memberId, period])
+  @@index([memberId])
+  @@index([status])
+  @@index([dueAt])
+  @@map("invoices")
+}
